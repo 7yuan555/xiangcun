@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="format-detection" content="telephone=no">
+  <title>指尖上的振兴</title>
+  <style>
+    :root {
+      /* 前期灰冷色调 */
+      --bg-cold-1: radial-gradient(circle at top, #6b6f76, #3f4349);
+      --bg-cold-2: radial-gradient(circle at top, #5f646d, #34373d);
+      --bg-cold-3: linear-gradient(180deg, #4b4f55 0%, #2f3238 100%);
+      /* 后期暖色调 */
+      --bg-warm-1: radial-gradient(circle at top, #f5d9a6, #b98a4b);
+      --bg-warm-2: radial-gradient(circle at top, #f7e3b5, #c99d56);
+      --bg-warm-3: linear-gradient(180deg, #f5c98c 0%, #b07f3a 100%);
+      --text-primary: #f5f3ee;
+      --text-secondary: #f0ede6;
+      --accent-gold: #f5b63b;
+      --accent-warm: #f2a65a;
+      --panel-bg: rgba(24, 26, 31, 0.55);
+      --panel-bg-warm: rgba(92, 64, 32, 0.55);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      touch-action: none;
+      background: #1f2126;
+      font-family: "Songti SC", "STSong", "SimSun", serif;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+      overscroll-behavior: none;
+    }
+
+    .game-wrapper {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, #2b2e34, #15171b);
+    }
+
+    .game-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      max-width: 480px;
+      margin: 0 auto;
+      overflow: hidden;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+      background: #1f2126;
+      touch-action: none;
+    }
+
+    .scene {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      color: var(--text-primary);
+      transition: background 1600ms ease, opacity 800ms ease;
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    .scene.active {
+      display: flex;
+      animation: scene-fade-in 900ms ease forwards;
+    }
+
+    @keyframes scene-fade-in {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .scene-background {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      transition: background 1600ms ease;
+    }
+
+    .scene-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .placeholder-block {
+      width: 100%;
+      max-width: 360px;
+      border-radius: 16px;
+      padding: 18px 20px;
+      text-align: center;
+      font-size: 13px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: rgba(245, 243, 238, 0.8);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0.25) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+
+    .placeholder-portrait {
+      width: 180px;
+      height: 220px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 12px;
+      font-size: 12px;
+      letter-spacing: 6px;
+      line-height: 1.8;
+      color: rgba(245, 243, 238, 0.8);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(0, 0, 0, 0.28) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    }
+
+    .text-panel {
+      width: 100%;
+      max-width: 360px;
+      padding: 20px 22px;
+      border-radius: 18px;
+      background: var(--panel-bg);
+      backdrop-filter: blur(6px) saturate(0.9);
+      -webkit-backdrop-filter: blur(6px) saturate(0.9);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      box-shadow: 0 18px 40px rgba(12, 14, 18, 0.45);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: center;
+    }
+
+    .text-panel.warm {
+      background: var(--panel-bg-warm);
+      border-color: rgba(245, 200, 140, 0.28);
+    }
+
+    .text-line {
+      font-size: clamp(14px, 2.6vw, 17px);
+      line-height: 1.9;
+      letter-spacing: 6px;
+      color: var(--text-secondary);
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    .text-line.hidden {
+      display: none;
+    }
+
+    .text-line.visible {
+      display: block;
+    }
+
+    .hint-text {
+      margin-top: 10px;
+      font-size: 12px;
+      letter-spacing: 10px;
+      text-transform: uppercase;
+      color: rgba(245, 243, 238, 0.55);
+    }
+
+    .action-button {
+      margin-top: 16px;
+      padding: 12px 28px;
+      border-radius: 999px;
+      border: 1px solid rgba(245, 200, 140, 0.6);
+      background: radial-gradient(circle, rgba(245, 182, 59, 0.9), rgba(176, 127, 58, 0.9));
+      color: #fff7ec;
+      font-size: 14px;
+      letter-spacing: 12px;
+      text-transform: uppercase;
+      box-shadow: 0 16px 40px rgba(176, 127, 58, 0.4);
+      position: relative;
+      overflow: hidden;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-width: 220px;
+    }
+
+    .action-button.active {
+      display: flex;
+      animation: button-fade-in 700ms ease forwards;
+    }
+
+    @keyframes button-fade-in {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .range-wrapper {
+      width: 100%;
+      max-width: 320px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      display: none;
+    }
+
+    .range-wrapper.active {
+      display: flex;
+      animation: scene-fade-in 700ms ease forwards;
+    }
+
+    .range-label {
+      font-size: 13px;
+      letter-spacing: 10px;
+      text-transform: uppercase;
+      color: rgba(245, 243, 238, 0.7);
+    }
+
+    .range-track-container {
+      position: relative;
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(245, 243, 238, 0.18);
+      overflow: hidden;
+    }
+
+    .range-track-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, rgba(245, 182, 59, 0.9) 0%, rgba(242, 166, 90, 0.9) 100%);
+      transition: width 120ms linear;
+    }
+
+    .range-input {
+      position: absolute;
+      inset: -14px 0;
+      width: 100%;
+      background: transparent;
+      -webkit-appearance: none;
+      appearance: none;
+      cursor: pointer;
+    }
+
+    .range-input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fff7ec 0%, #f5b63b 100%);
+      box-shadow: 0 12px 30px rgba(245, 182, 59, 0.45);
+      border: 2px solid rgba(255, 247, 236, 0.9);
+    }
+
+    .range-input::-moz-range-thumb {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fff7ec 0%, #f5b63b 100%);
+      box-shadow: 0 12px 30px rgba(245, 182, 59, 0.45);
+      border: 2px solid rgba(255, 247, 236, 0.9);
+    }
+
+    .range-input::-webkit-slider-runnable-track {
+      background: transparent;
+      height: 10px;
+    }
+
+    .range-input::-moz-range-track {
+      background: transparent;
+      height: 10px;
+    }
+
+    .progress-text {
+      font-size: 12px;
+      letter-spacing: 12px;
+      text-transform: uppercase;
+      color: rgba(245, 243, 238, 0.6);
+    }
+
+    .time-skip-overlay {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      z-index: 5;
+      text-align: center;
+    }
+
+    .time-skip-overlay.active {
+      display: flex;
+    }
+
+    .calendar-flip {
+      position: relative;
+      width: 160px;
+      height: 200px;
+      perspective: 900px;
+    }
+
+    .calendar-page {
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #f7f3ec 0%, #e7dfcf 100%);
+      color: #4a3f2f;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 30px 60px rgba(58, 42, 24, 0.4);
+      transform-origin: top;
+    }
+
+    .calendar-page.back {
+      transform: rotateX(-90deg);
+    }
+
+    .calendar-page.active {
+      animation: calendar-flip 900ms ease forwards;
+    }
+
+    @keyframes calendar-flip {
+      0% {
+        transform: rotateX(0deg);
+      }
+
+      100% {
+        transform: rotateX(-90deg);
+        opacity: 0;
+      }
+    }
+
+    .calendar-month {
+      font-size: 14px;
+      letter-spacing: 16px;
+      text-transform: uppercase;
+    }
+
+    .calendar-day {
+      font-size: 72px;
+      font-weight: bold;
+    }
+
+    .coin-field {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .coin {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #f5d16e 0%, #b98a2a 100%);
+      box-shadow: 0 10px 20px rgba(185, 138, 42, 0.4);
+      animation: coin-fall 1400ms linear forwards;
+    }
+
+    @keyframes coin-fall {
+      0% {
+        transform: translateY(-20vh) scale(0.8);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(80vh) scale(1);
+        opacity: 0;
+      }
+    }
+
+    .light-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .light-dot {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(245, 217, 166, 0.9) 0%, rgba(245, 182, 59, 0) 70%);
+      filter: blur(0.2px);
+      opacity: 0.25;
+      transition: opacity 600ms ease, transform 600ms ease;
+    }
+
+    .light-dot.lit {
+      opacity: 1;
+      transform: scale(1.6);
+      box-shadow: 0 0 40px rgba(245, 182, 59, 0.6);
+    }
+
+    .ending-panel {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 16px;
+      z-index: 6;
+      padding: 24px;
+    }
+
+    .ending-panel.active {
+      display: flex;
+      animation: scene-fade-in 1000ms ease forwards;
+    }
+
+    .ending-text {
+      font-size: clamp(16px, 4vw, 22px);
+      letter-spacing: 16px;
+      text-transform: uppercase;
+      color: var(--text-primary);
+    }
+
+    .ending-subtext {
+      font-size: clamp(12px, 2.6vw, 14px);
+      letter-spacing: 12px;
+      text-transform: uppercase;
+      color: rgba(245, 243, 238, 0.7);
+    }
+
+    .tap-catcher {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+
+    .scene-1 .scene-background {
+      background: var(--bg-cold-1);
+    }
+
+    .scene-2 .scene-background {
+      background: var(--bg-cold-2);
+    }
+
+    .scene-3 .scene-background {
+      background: var(--bg-cold-3);
+    }
+
+    .scene-4 .scene-background {
+      background: var(--bg-cold-3);
+    }
+
+    .scene-4.warm .scene-background {
+      background: var(--bg-warm-3);
+    }
+
+    .scene-5 .scene-background {
+      background: var(--bg-warm-1);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="game-wrapper">
+    <div class="game-container">
+      <!-- 场景1：序章 -->
+      <section class="scene scene-1 active" data-scene="1">
+        <div class="scene-background"></div>
+        <div class="tap-catcher" data-action="scene1-next"></div>
+        <div class="scene-content">
+          <div class="placeholder-block">【这里放：场景1背景图】</div>
+          <div class="text-panel">
+            <div class="text-line visible" data-line="1">青石板路上，时光还未翻开新的篇章</div>
+            <div class="text-line hidden" data-line="2">偏远的山村里，日复一日地守着微薄的收成</div>
+            <div class="text-line hidden" data-line="3">一双双粗糙的手，仍在默默守护着最朴素的生活</div>
+          </div>
+          <div class="hint-text">点击屏幕 翻页</div>
+        </div>
+      </section>
+
+      <!-- 场景2：转机 -->
+      <section class="scene scene-2" data-scene="2">
+        <div class="scene-background"></div>
+        <div class="tap-catcher" data-action="scene2-next"></div>
+        <div class="scene-content">
+          <div class="placeholder-block">【这里放：场景2背景图】</div>
+          <div class="placeholder-portrait">【这里放：村支书形象】</div>
+          <div class="text-panel">
+            <div class="text-line" id="scene2-typer"></div>
+          </div>
+          <div class="hint-text">点击屏幕 继续</div>
+        </div>
+      </section>
+
+      <!-- 场景3：手艺体验 -->
+      <section class="scene scene-3" data-scene="3">
+        <div class="scene-background"></div>
+        <div class="scene-content">
+          <div class="placeholder-block">【这里放：场景3背景图】</div>
+          <div class="placeholder-portrait">【这里放：刺绣/纺线场景】</div>
+          <div class="text-panel">
+            <div class="text-line visible">一针一线，皆是传承</div>
+            <div class="text-line visible">向右滑动滑块，完成手艺练习</div>
+          </div>
+          <div class="range-wrapper active" id="craft-range-wrapper">
+            <div class="range-label">刺绣 · 纺线</div>
+            <div class="range-track-container">
+              <div class="range-track-fill" id="range-fill"></div>
+              <input class="range-input" id="craft-range" type="range" min="0" max="100" value="0" step="1">
+            </div>
+            <div class="progress-text" id="range-progress">进度 0%</div>
+          </div>
+          <button class="action-button" id="to-scene4">获得道具 · 继续</button>
+        </div>
+      </section>
+
+      <!-- 场景4：致富快进 -->
+      <section class="scene scene-4" data-scene="4">
+        <div class="scene-background"></div>
+        <div class="scene-content">
+          <div class="placeholder-block">【这里放：场景4背景图】</div>
+          <div class="text-panel">
+            <div class="text-line visible">政策相助，手艺变现</div>
+            <div class="text-line visible">日子，正一点点翻开新篇</div>
+          </div>
+          <button class="action-button active" id="time-skip-btn">时光飞逝</button>
+        </div>
+        <div class="time-skip-overlay" id="time-skip-overlay">
+          <div class="calendar-flip">
+            <div class="calendar-page">
+              <div class="calendar-month">春</div>
+              <div class="calendar-day">初</div>
+            </div>
+            <div class="calendar-page back" id="calendar-back">
+              <div class="calendar-month">冬</div>
+              <div class="calendar-day">至</div>
+            </div>
+          </div>
+          <div class="hint-text">山村日新月异</div>
+        </div>
+        <div class="coin-field" id="coin-field"></div>
+      </section>
+
+      <!-- 场景5：情感升华 -->
+      <section class="scene scene-5" data-scene="5">
+        <div class="scene-background"></div>
+        <div class="scene-content">
+          <div class="placeholder-block">【这里放：场景5背景图】</div>
+          <div class="text-panel warm">
+            <div class="text-line visible">长按屏幕，点亮属于他们的光</div>
+            <div class="text-line visible">致敬每一位扎根乡土的扶贫干部</div>
+          </div>
+          <div class="hint-text">长按 3 秒 点亮光点</div>
+        </div>
+        <div class="light-overlay" id="light-overlay"></div>
+        <div class="ending-panel" id="ending-panel">
+          <div class="placeholder-block">【这里放：结尾场景图】</div>
+          <div class="ending-text">致敬扶贫干部</div>
+          <div class="ending-subtext">点滴付出 · 温暖山河</div>
+          <div class="ending-subtext">真实故事 · 薪火相传</div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const scenes = Array.from(document.querySelectorAll('.scene'));
+    const scene1Lines = Array.from(document.querySelectorAll('.scene-1 .text-line'));
+    const scene1Next = document.querySelector('.scene-1 [data-action="scene1-next"]');
+    const scene2Typer = document.getElementById('scene2-typer');
+    const scene2Next = document.querySelector('.scene-2 [data-action="scene2-next"]');
+    const craftRange = document.getElementById('craft-range');
+    const rangeFill = document.getElementById('range-fill');
+    const rangeProgress = document.getElementById('range-progress');
+    const toScene4 = document.getElementById('to-scene4');
+    const timeSkipBtn = document.getElementById('time-skip-btn');
+    const timeSkipOverlay = document.getElementById('time-skip-overlay');
+    const calendarBack = document.getElementById('calendar-back');
+    const coinField = document.getElementById('coin-field');
+    const scene4 = document.querySelector('.scene-4');
+    const lightOverlay = document.getElementById('light-overlay');
+    const endingPanel = document.getElementById('ending-panel');
+    const scene5 = document.querySelector('.scene-5');
+
+    let scene1Index = 0;
+    let scene2Typed = false;
+    let scene2Done = false;
+    let craftDone = false;
+    let timeSkipDone = false;
+    let lightsLit = 0;
+    const totalLights = 6;
+
+    const scene2Text = "村支书：乡亲们，政策来了。只要我们一起把家门口的手艺传下去、做精做响，日子就会慢慢好起来。";
+
+    function goToScene(index) {
+      scenes.forEach((scene, idx) => {
+        if (idx === index) {
+          scene.classList.add('active');
+        } else {
+          scene.classList.remove('active');
+        }
+      });
+    }
+
+    function bindClick(el, handler) {
+      if (!el) return;
+      const onTouch = (e) => {
+        e.preventDefault();
+        handler(e);
+      };
+      const onClick = (e) => {
+        handler(e);
+      };
+      el.addEventListener('touchstart', onTouch, { passive: false });
+      el.addEventListener('click', onClick);
+    }
+
+    function bindLongPress(el, handler, duration = 3000) {
+      if (!el) return;
+      let timer = null;
+      let triggered = false;
+
+      const start = (e) => {
+        if (triggered) return;
+        e.preventDefault();
+        triggered = false;
+        timer = setTimeout(() => {
+          triggered = true;
+          handler(e);
+        }, duration);
+      };
+
+      const cancel = (e) => {
+        if (timer) {
+          clearTimeout(timer);
+          timer = null;
+        }
+        triggered = false;
+      };
+
+      el.addEventListener('mousedown', start);
+      el.addEventListener('touchstart', start, { passive: false });
+      el.addEventListener('mouseup', cancel);
+      el.addEventListener('mouseleave', cancel);
+      el.addEventListener('touchend', cancel);
+      el.addEventListener('touchcancel', cancel);
+    }
+
+    function typeText(element, text, speed = 70) {
+      if (!element) return Promise.resolve();
+      element.textContent = '';
+      return new Promise((resolve) => {
+        let i = 0;
+        const timer = setInterval(() => {
+          if (i < text.length) {
+            element.textContent += text[i];
+            i += 1;
+          } else {
+            clearInterval(timer);
+            resolve();
+          }
+        }, speed);
+      });
+    }
+
+    function wait(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    // 场景1
+    bindClick(scene1Next, () => {
+      if (scene1Index < scene1Lines.length - 1) {
+        scene1Lines[scene1Index + 1].classList.remove('hidden');
+        scene1Lines[scene1Index + 1].classList.add('visible');
+        scene1Index += 1;
+        return;
+      }
+      goToScene(1);
+      if (!scene2Typed) {
+        scene2Typed = true;
+        typeText(scene2Typer, scene2Text, 65).then(() => {
+          scene2Done = true;
+        });
+      }
+    });
+
+    // 场景2
+    bindClick(scene2Next, () => {
+      if (!scene2Done) return;
+      goToScene(2);
+    });
+
+    // 场景3
+    craftRange.addEventListener('input', () => {
+      const value = Number(craftRange.value);
+      rangeFill.style.width = value + '%';
+      rangeProgress.textContent = '进度 ' + value + '%';
+      if (value >= 100 && !craftDone) {
+        craftDone = true;
+        toScene4.classList.add('active');
+      }
+    });
+
+    bindClick(toScene4, () => {
+      goToScene(3);
+    });
+
+    // 场景4
+    bindClick(timeSkipBtn, async () => {
+      if (timeSkipDone) return;
+      timeSkipDone = true;
+      timeSkipBtn.classList.remove('active');
+      timeSkipOverlay.classList.add('active');
+      calendarBack.classList.add('active');
+      await wait(900);
+      spawnCoins();
+      scene4.classList.add('warm');
+      await wait(1400);
+      goToScene(4);
+      initLights();
+    });
+
+    function spawnCoins() {
+      const count = 16;
+      for (let i = 0; i < count; i += 1) {
+        const coin = document.createElement('div');
+        coin.className = 'coin';
+        const left = Math.random() * 80 + 10;
+        const delay = Math.random() * 400;
+        coin.style.left = left + '%';
+        coin.style.animationDelay = delay + 'ms';
+        coinField.appendChild(coin);
+        setTimeout(() => coin.remove(), 2000);
+      }
+    }
+
+    // 场景5
+    function initLights() {
+      if (lightOverlay.childElementCount > 0) return;
+      for (let i = 0; i < totalLights; i += 1) {
+        const dot = document.createElement('div');
+        dot.className = 'light-dot';
+        const angle = (Math.PI * 2 * i) / totalLights;
+        const radius = 38 + Math.random() * 12;
+        const x = 50 + Math.cos(angle) * radius;
+        const y = 46 + Math.sin(angle) * radius;
+        dot.style.left = x + '%';
+        dot.style.top = y + '%';
+        lightOverlay.appendChild(dot);
+      }
+    }
+
+    bindLongPress(scene5, () => {
+      const dots = Array.from(lightOverlay.querySelectorAll('.light-dot'));
+      for (let i = 0; i < dots.length; i += 1) {
+        if (!dots[i].classList.contains('lit')) {
+          dots[i].classList.add('lit');
+          lightsLit += 1;
+          break;
+        }
+      }
+      if (lightsLit >= totalLights) {
+        endingPanel.classList.add('active');
+      }
+    }, 3000);
+  </script>
+</body>
+
+</html>
